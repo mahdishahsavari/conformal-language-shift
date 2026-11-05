@@ -16,17 +16,23 @@ def lac_scores(probs: np.ndarray, y: np.ndarray) -> np.ndarray:
     return 1.0 - probs[np.arange(len(y)), y]
 
 
-def aps_scores(probs: np.ndarray, y: np.ndarray) -> np.ndarray:
-    """APS nonconformity score: total probability ranked at or above the true option.
+def _aps_matrix(probs: np.ndarray) -> np.ndarray:
+    """APS score of every option: its probability plus that of all higher-ranked options."""
+    order = np.argsort(-probs, axis=1)
+    cumulative = np.cumsum(np.take_along_axis(probs, order, axis=1), axis=1)
+    scores = np.empty_like(cumulative)
+    np.put_along_axis(scores, order, cumulative, axis=1)
+    return scores
 
-    Not used by the pilot. Implementing it answers a question the paper needs:
-    does the coverage loss under language shift depend on the score function?
-    """
-    # TODO(Mahdi): sort each row by descending probability, take the cumulative
-    # sum, and return the cumulative value at the position of the true option.
-    # Trade-off to think about: LAC gives the smallest sets but tends to
-    # under-cover hard questions; APS gives larger sets with more even coverage.
-    raise NotImplementedError
+
+def aps_scores(probs: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """APS nonconformity score: total probability ranked at or above the true option."""
+    return _aps_matrix(probs)[np.arange(len(y)), y]
+
+
+def aps_prediction_sets(probs: np.ndarray, threshold: float) -> np.ndarray:
+    """Boolean membership matrix for deterministic APS. A set can be empty."""
+    return _aps_matrix(probs) <= threshold
 
 
 def conformal_threshold(scores: np.ndarray, alpha: float) -> float:
@@ -50,6 +56,22 @@ def coverage(sets: np.ndarray, y: np.ndarray) -> float:
 
 def mean_set_size(sets: np.ndarray) -> float:
     return float(sets.sum(axis=1).mean())
+
+
+def apply_temperature(log_probs: np.ndarray, temperature: float) -> np.ndarray:
+    """Softmax of log-probabilities divided by a temperature."""
+    scaled = log_probs / temperature
+    scaled = scaled - scaled.max(axis=1, keepdims=True)
+    probs = np.exp(scaled)
+    return probs / probs.sum(axis=1, keepdims=True)
+
+
+def fit_temperature(log_probs: np.ndarray, y: np.ndarray) -> float:
+    """Temperature with the lowest negative log-likelihood, found by grid search."""
+    grid = np.geomspace(0.25, 100.0, 120)
+    rows = np.arange(len(y))
+    losses = [-np.log(apply_temperature(log_probs, t)[rows, y]).mean() for t in grid]
+    return float(grid[int(np.argmin(losses))])
 
 
 def expected_calibration_error(probs: np.ndarray, y: np.ndarray, bins: int = 15) -> float:

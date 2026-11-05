@@ -41,6 +41,28 @@
     "coverage_p5": 0.86,
     "set_size": 2.883222
   },
+  "aps": {
+    "en->en": {
+      "coverage": 0.900072,
+      "size": 2.560149,
+      "empty": 0.034867
+    },
+    "en->fa": {
+      "coverage": 0.866913,
+      "size": 2.999093,
+      "empty": 0.0
+    },
+    "fa->fa": {
+      "coverage": 0.913988,
+      "size": 3.337165,
+      "empty": 0.0
+    },
+    "coverage_gap_en_minus_fa": {
+      "mean": 0.033159000000000036,
+      "p2.5": 0.0040000000000000036,
+      "p97.5": 0.05902500000000003
+    }
+  },
   "coverage_gap_en_minus_fa": {
     "mean": 0.007977000000000007,
     "p2.5": -0.008000000000000007,
@@ -49,6 +71,64 @@
   "minimum_probability_to_keep_option": {
     "en": 2.829132225157238e-07,
     "fa": 2.3129528137211253e-07
+  },
+  "after_temperature_scaling": {
+    "temperature": {
+      "en": 7.670637023171958,
+      "fa": 10.375946752775207
+    },
+    "LAC": {
+      "en->en": {
+        "coverage": 0.9009466666666667,
+        "set_size": 1.9984200000000003
+      },
+      "en->fa": {
+        "coverage": 0.90379,
+        "set_size": 2.8686933333333333
+      },
+      "fa->fa": {
+        "coverage": 0.9003233333333333,
+        "set_size": 2.83017
+      },
+      "coverage_gap_en_minus_fa": {
+        "mean": -0.002843333333333324,
+        "p2.5": -0.030999999999999917,
+        "p97.5": 0.06157499999999987
+      }
+    },
+    "APS": {
+      "en->en": {
+        "coverage": 0.9008533333333333,
+        "set_size": 2.3183266666666666
+      },
+      "en->fa": {
+        "coverage": 0.8581166666666666,
+        "set_size": 2.88267
+      },
+      "fa->fa": {
+        "coverage": 0.9690066666666667,
+        "set_size": 3.7772666666666668
+      },
+      "coverage_gap_en_minus_fa": {
+        "mean": 0.0427366666666667,
+        "p2.5": 0.02200000000000002,
+        "p97.5": 0.06800000000000006
+      }
+    }
+  },
+  "saturation_checks": {
+    "en": {
+      "ece_after_scaling": 0.05996272095362781,
+      "raw_aps_tied_share": 0.3955,
+      "scaled_aps_threshold": 0.9521732105327247,
+      "scaled_aps_tied_share": 0.0005
+    },
+    "fa": {
+      "ece_after_scaling": 0.059209474746692366,
+      "raw_aps_tied_share": 0.1635,
+      "scaled_aps_threshold": 1.0,
+      "scaled_aps_tied_share": 0.1335
+    }
   },
   "by_category": {
     "Business": {

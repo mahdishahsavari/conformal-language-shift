@@ -1,66 +1,98 @@
 # Conformal Language Shift
 
-Does a conformal prediction guarantee survive translation? This project calibrates a language model on English multiple-choice questions and tests it on the same kind of questions in Persian.
+Does a conformal prediction guarantee survive translation? This project calibrates language models on English multiple-choice questions and tests them on the same questions in Persian.
 
-**Status: work in progress.** The results below are preliminary and come from one model and 2,000 question pairs.
+**Status: preliminary.** The results come from two models and 2,000 question pairs.
+
+## Main finding so far
+
+A threshold calibrated in English did not reliably keep its 90% coverage target on Persian. On pairs where both models answered with an option letter:
+
+- **APS** fell below the target on both models (0.862 and 0.853).
+- **LAC** depended on the model: Qwen3 stayed on target (0.910), but Gemma 4 fell to 0.829.
+- Accuracy was lower in Persian for both models, and Persian prediction sets were larger than English ones.
 
 ## Method
 
-- **Data:** paired English and Persian questions from [Global-MMLU](https://huggingface.co/datasets/CohereLabs/Global-MMLU).
-- **Model:** [Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507), run in `float16` on a Colab T4 GPU.
-- **Scores:** the probabilities of options A, B, C and D at the first generated token, normalized over the four options.
-- **Conformal method:** split conformal prediction with the LAC score, targeting 90% coverage.
-- **Evaluation:** 1,000 random splits. Calibration and test questions never overlap.
+- **Data:** the first 2,000 question pairs, in a fixed random order, from [Global-MMLU](https://huggingface.co/datasets/CohereLabs/Global-MMLU).
+- **Models:** [Qwen3-4B-Instruct-2507](https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507) in `float16` and [Gemma 4 E2B](https://huggingface.co/google/gemma-4-E2B-it) in `bfloat16`, both on a Colab T4 GPU.
+- **Scores:** the log-probabilities of options A, B, C and D at the first generated token, normalized over the four options.
+- **Letter mass:** the share of next-token probability held by those four letters. A low value means the model wanted to start its answer differently.
+- **Conformal methods:** split conformal prediction with the LAC and APS scores, targeting 90% coverage. APS is deterministic, so a set can be empty.
+- **Temperature scaling:** fitted by grid search on a separate part of the calibration language.
+- **Evaluation:** 300 random splits. Each uses 25% of the questions for the temperature, 25% for the threshold and 50% for testing, with no overlap.
 
 ## Preliminary results
 
-| Language | Accuracy | Mean confidence | ECE |
-|---|---:|---:|---:|
-| English | 0.701 | 0.965 | 0.265 |
-| Persian | 0.496 | 0.942 | 0.446 |
+### The models (all 2,000 pairs)
 
-| Calibrate → test | Coverage | Mean set size (out of 4) |
+| Model | Language | Accuracy | ECE | Fitted temperature | Letter mass below 0.9 |
+|---|---|---:|---:|---:|---:|
+| Qwen3-4B | English | 0.701 | 0.265 | 7.67 | 1.6% |
+| Qwen3-4B | Persian | 0.496 | 0.446 | 10.38 | 1.7% |
+| Gemma 4 E2B | English | 0.545 | 0.389 | 6.27 | 13.8% |
+| Gemma 4 E2B | Persian | 0.427 | 0.495 | 9.38 | 0.2% |
+
+### Coverage after temperature scaling, pairs with letter mass of at least 0.9 in both languages
+
+This keeps 1,952 pairs for Qwen3-4B and 1,724 for Gemma 4 E2B. The target is 0.90. Set size is out of 4 options.
+
+| Model | Calibrate → test | LAC coverage | LAC set size | APS coverage | APS set size |
+|---|---|---:|---:|---:|---:|
+| Qwen3-4B | English → English | 0.903 | 1.99 | 0.904 | 2.31 |
+| Qwen3-4B | English → Persian | 0.910 | 2.90 | **0.862** | 2.88 |
+| Gemma 4 E2B | English → English | 0.899 | 2.33 | 0.901 | 2.81 |
+| Gemma 4 E2B | English → Persian | **0.829** | 2.56 | **0.853** | 2.95 |
+
+The coverage gap is English → English minus English → Persian. The range covers 95% of the splits.
+
+| Model | LAC gap (points) | APS gap (points) |
 |---|---:|---:|
-| English → English | 0.900 | 1.99 |
-| English → Persian | 0.892 | 2.83 |
-| Persian → Persian | 0.900 | 2.88 |
+| Qwen3-4B | -0.7 (-3.4 to 5.4) | 4.2 (2.2 to 6.4) |
+| Gemma 4 E2B | 7.0 (5.2 to 8.8) | 4.8 (2.1 to 7.0) |
 
-- **Coverage roughly held.** The gap between English → English and English → Persian averaged 0.8 percentage points. Across splits, 95% of the gaps fell between -0.8 and 3.3 points. The expected large drop did not appear.
-- **The cost appeared in set size.** Prediction sets grew from 1.99 to 2.83 options, which makes them much less informative. Persian accuracy was also 20.5 points lower.
-- **Coverage varied by subject.** With the English threshold, Persian coverage ranged from 0.854 in Humanities to 0.953 in the Other category. Some groups are small, and this needs testing on more data before drawing conclusions.
+### Effect of the letter mass filter
+
+On all 2,000 pairs, LAC gives the same picture: English → Persian coverage is 0.904 for Qwen3-4B and 0.839 for Gemma 4 E2B. APS changes for Gemma 4 E2B: coverage is 0.888 and the gap is 2.6 points (-0.2 to 4.8). This number is less trustworthy, because Gemma 4's English APS threshold reaches 1.0 and 11% of scores tie at it without the filter. With the filter, that threshold is 0.964 and ties are below 0.1%.
+
+### Persian → Persian APS
+
+Persian → Persian APS should not be read as a good result. Its threshold reaches 1.0 in both models, 13% to 15% of its scores tie there, and it covers about 0.97 by keeping most options. Better calibration of Persian scores is needed before comparing it.
+
+### Calibrating with a few Persian questions
+
+Without temperature scaling, LAC calibrated on only 100 Persian questions reached average coverage of 0.902 for Qwen3-4B and 0.901 for Gemma 4 E2B. Individual runs vary more: the 5th percentile of coverage was about 0.85. This restores coverage but does not make the sets smaller: mean set size was 2.89 and 3.09.
 
 ## Limitations
 
-- The results come from a single model, so they may not generalize.
-- The model is badly overconfident. An option stays in the set if its probability is above about 3 × 10⁻⁷, so the sets depend on very small probabilities. These values may be sensitive to `float16` rounding.
+- The letter mass filter was chosen after seeing the Gemma 4 results, so filtered results are exploratory.
+- Why Gemma 4 often avoids a letter in English has not been investigated.
+- There are only two models, and they ran at different numerical precisions (`float16` and `bfloat16`).
+- Both are small models, so larger models may behave differently.
 - The Persian questions are translations, not questions written natively in Persian.
-
-## Next steps
-
-- Repeat the experiment with a second model and more question pairs.
-- Add the APS score to test whether the result depends on the score function. `aps_scores` in `src/conformal.py` is not implemented yet.
-- Test whether the small probabilities are stable under higher numerical precision.
+- Why LAC and APS behave differently has not been tested.
 
 ## Reproduce
 
-1. Open `colab_score.ipynb` in Google Colab, choose a T4 GPU and run all cells.
+1. Open `colab_score.ipynb` in Google Colab, choose a T4 GPU and run all cells. The notebook is set to Gemma 4 E2B, and a comment in its first cell gives the Qwen3-4B settings.
 2. Put the output file in `results/`.
 3. Run the analysis and the tests:
 
 ```bash
 pip install -r requirements.txt
-python src/analyze.py results/Qwen3-4B-Instruct-2507.jsonl
+python src/analyze.py results/gemma-4-E2B-it.jsonl
+python src/analyze.py results/gemma-4-E2B-it.jsonl --min-letter-mass 0.9
 pytest tests
 ```
 
-The results used here are in `results/`, so you can run the analysis without a GPU.
+The scores for both models are in `results/`, so you can run the analysis without a GPU.
 
 ## Files
 
 | Path | Purpose |
 |---|---|
-| `colab_score.ipynb` | Runs the model and saves the option probabilities |
-| `src/conformal.py` | Conformal prediction and calibration metrics |
+| `colab_score.ipynb` | Runs a model and saves the option scores |
+| `src/conformal.py` | Conformal prediction, temperature scaling and calibration metrics |
 | `src/analyze.py` | Produces the results above |
 | `tests/test_conformal.py` | Tests for the conformal code on synthetic data |
-| `results/` | Model scores and the result summary |
+| `results/` | Model scores and result summaries |
