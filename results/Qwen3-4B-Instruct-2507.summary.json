@@ -1,0 +1,97 @@
+{
+  "en->en": {
+    "coverage": 0.9003,
+    "coverage_sd": 0.012907439715141043,
+    "coverage_p5": 0.879,
+    "set_size": 1.987506
+  },
+  "en->fa": {
+    "coverage": 0.892323,
+    "coverage_sd": 0.021330275924141273,
+    "coverage_p5": 0.852,
+    "set_size": 2.8316310000000002
+  },
+  "fa->fa": {
+    "coverage": 0.9004070000000001,
+    "coverage_sd": 0.013405198655745477,
+    "coverage_p5": 0.87695,
+    "set_size": 2.879625
+  },
+  "fa(25)->fa": {
+    "coverage": 0.9226340000000001,
+    "coverage_sd": 0.05395357304201454,
+    "coverage_p5": 0.8218,
+    "set_size": 3.0681899999999995
+  },
+  "fa(50)->fa": {
+    "coverage": 0.9002429999999999,
+    "coverage_sd": 0.043526244393469096,
+    "coverage_p5": 0.8208,
+    "set_size": 2.88863
+  },
+  "fa(100)->fa": {
+    "coverage": 0.901509,
+    "coverage_sd": 0.030710973918129013,
+    "coverage_p5": 0.847,
+    "set_size": 2.888652
+  },
+  "fa(200)->fa": {
+    "coverage": 0.900886,
+    "coverage_sd": 0.02290377706842259,
+    "coverage_p5": 0.86,
+    "set_size": 2.883222
+  },
+  "coverage_gap_en_minus_fa": {
+    "mean": 0.007977000000000007,
+    "p2.5": -0.008000000000000007,
+    "p97.5": 0.033025000000000006
+  },
+  "minimum_probability_to_keep_option": {
+    "en": 2.829132225157238e-07,
+    "fa": 2.3129528137211253e-07
+  },
+  "by_category": {
+    "Business": {
+      "n": 101,
+      "accuracy_en": 0.7920792079207921,
+      "accuracy_fa": 0.5445544554455446,
+      "coverage_en": 0.9490868175092774,
+      "coverage_fa": 0.8788047315344184
+    },
+    "Humanities": {
+      "n": 675,
+      "accuracy_en": 0.6148148148148148,
+      "accuracy_fa": 0.3985185185185185,
+      "coverage_en": 0.8348713961093811,
+      "coverage_fa": 0.8538480886994922
+    },
+    "Medical": {
+      "n": 224,
+      "accuracy_en": 0.7366071428571429,
+      "accuracy_fa": 0.5535714285714286,
+      "coverage_en": 0.9179172192443033,
+      "coverage_fa": 0.8847842572596147
+    },
+    "Other": {
+      "n": 125,
+      "accuracy_en": 0.808,
+      "accuracy_fa": 0.504,
+      "coverage_en": 0.9735762569731932,
+      "coverage_fa": 0.9527835973280923
+    },
+    "STEM": {
+      "n": 428,
+      "accuracy_en": 0.6752336448598131,
+      "accuracy_fa": 0.5514018691588785,
+      "coverage_en": 0.9289962517198341,
+      "coverage_fa": 0.9457992149190889
+    },
+    "Social Sciences": {
+      "n": 447,
+      "accuracy_en": 0.785234899328859,
+      "accuracy_fa": 0.5503355704697986,
+      "coverage_en": 0.9335101305077831,
+      "coverage_fa": 0.8916919735847967
+    }
+  }
+}
